@@ -21,16 +21,18 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
     LocationManager locationManager;
     LocationListener locationListener;
     private GoogleMap mMap;
 
-    public void centerMapOnLocation(Location location, String title){
-        LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        mMap.clear();
-        mMap.addMarker(new MarkerOptions().position(userLocation).title(title));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 10));
+    public void centerMapOnLocation(Location location, String title) {
+        if (location != null) {
+            LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+            mMap.clear();
+            mMap.addMarker(new MarkerOptions().position(userLocation).title(title));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 12));
+        }
     }
 
     @Override
@@ -59,6 +61,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        mMap.setOnMapLongClickListener(this);
+
 
         Intent intent = getIntent();
         if(intent.getIntExtra("placeNumber",0) == 0){
@@ -94,6 +99,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
             }
         }
-        
+
     }
+
+    @Override
+        public void onMapLongClick(LatLng latLng) {
+            mMap.addMarker(new MarkerOptions().position(latLng).title("Your new Memorable Place"));
+        }
 }
