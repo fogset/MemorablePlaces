@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -20,6 +23,11 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
     LocationManager locationManager;
@@ -55,6 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
     }
 
 
@@ -98,12 +107,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }else{
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
             }
+        }else{
+            Location placeLocation = new Location(LocationManager.GPS_PROVIDER);
+            placeLocation.setLatitude(MainActivity.locations.get(intent.getIntExtra("placeNumber",0)).latitude);
+            placeLocation.setLongitude(MainActivity.locations.get(intent.getIntExtra("placeNumber",0)).longitude);
+
+            centerMapOnLocation(placeLocation, MainActivity.places.get(intent.getIntExtra("placeNumber",0)));
         }
 
     }
 
     @Override
         public void onMapLongClick(LatLng latLng) {
-            mMap.addMarker(new MarkerOptions().position(latLng).title("Your new Memorable Place"));
+            Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+            String address = "";
+            try{
+                List<Address> listAdddresses = geocoder.getFromLocation(latLng.latitude,latLng.longitude,1);
+                if(listAdddresses != null && listAdddresses.size() > 0){
+                    if(listAdddresses.get(0).getSubThoroughfare() != null){
+                        address += listAdddresses.get(0).getSubThoroughfare() + " ";
+                    }
+                    address += listAdddresses.get(0).getThoroughfare();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        if (address.equals("")){
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm yyyy-MM-dd");
+               address += sdf.format(new Date());
+           }
+
+            mMap.addMarker(new MarkerOptions().position(latLng).title(address));
+
+            MainActivity.places.add(address);
+            MainActivity.locations.add(latLng);
+
+            MainActivity.arrayAdapter.notifyDataSetChanged();
+
+            Toast.makeText(this, "Location Saved!", Toast.LENGTH_SHORT).show();
         }
 }
