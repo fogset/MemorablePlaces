@@ -1,6 +1,8 @@
 package com.example.tianhao.memorableplaces;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -24,8 +26,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ListView listView = findViewById(R.id.listVIew);
 
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.example.tianhao.memorableplaces", Context.MODE_PRIVATE);
+        ArrayList<String> latitudes = new ArrayList<>();
+        ArrayList<String> longtitudes = new ArrayList<>();
+        try{
+            places = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("places",ObjectSerializer.serialize(new ArrayList<String>())));
+            latitudes = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("lats",ObjectSerializer.serialize(new ArrayList<String>())));
+            longtitudes = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("lons",ObjectSerializer.serialize(new ArrayList<String>())));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+
+        ListView listView = findViewById(R.id.listVIew);
         places.add("Add a new place...");
         locations.add(new LatLng(0,0));
 
