@@ -30,6 +30,12 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = this.getSharedPreferences("com.example.tianhao.memorableplaces", Context.MODE_PRIVATE);
         ArrayList<String> latitudes = new ArrayList<>();
         ArrayList<String> longtitudes = new ArrayList<>();
+
+        places.clear();
+        latitudes.clear();
+        longtitudes.clear();
+        locations.clear();
+
         try{
             places = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("places",ObjectSerializer.serialize(new ArrayList<String>())));
             latitudes = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("lats",ObjectSerializer.serialize(new ArrayList<String>())));
@@ -38,12 +44,21 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        if(places.size() > 0 && latitudes.size() > 0 && longtitudes.size() > 0){
+            if(places.size() == latitudes.size() && places.size() == longtitudes.size()){
+                for (int i=0; i < latitudes.size(); i++){
+                    locations.add(new LatLng(Double.parseDouble(latitudes.get(i)), Double.parseDouble(longtitudes.get(i))));
+                }
+            }
+        }else{
+            places.add("Add a new place...");
+            locations.add(new LatLng(0,0));
+        }
 
 
 
         ListView listView = findViewById(R.id.listVIew);
-        places.add("Add a new place...");
-        locations.add(new LatLng(0,0));
+
 
 
         arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, places);
